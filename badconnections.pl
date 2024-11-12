@@ -29,9 +29,12 @@ foreach (@connections){
 		push(@badconnections,$con);
 		}
 	}
-#print @connections;
-print "Bad connections : \n";
-foreach (@badconnections){
-print"$_+\n";
+if (@badconnections>0){
+    foreach (@badconnections){
+        print"$_+\n";
+    }
+}
+else{
+    print "No bad connectiosn detected.\n";
 }
 
