@@ -10,6 +10,29 @@
 #Date - 12-11-2024
 #dougalite@gmail.com
 
+
+sub isblocked
+{
+my $ip=shift(@_);
+($ip,$port)=split(":",$ip);
+@ipparts=split(".".$ip);
+foreach (@_){
+    ($bip,$bits)=split("/",$_);
+    @bipparts=split(".".$bip);
+    $blocked=1;
+    for(my $i = 0; $i <= 3-$bits/8; $i++){
+        if($ipparts[i]!=$bipparts[i]){
+            $blocked=0;
+        }
+
+    }
+    if($blocked=1){
+        return(1);
+    }
+    }
+    return(0);
+}
+print "Finding bad connections.Please wait ,this can take a few minutes in some cases.\n";
 $info=`ss -rt`;
 open my $handle, '<', "ipstoblock";
 chomp(my @blockedips = <$handle>);
@@ -18,7 +41,6 @@ close $handle;
 #print $connections;
 #print @blockedips;
 
-print "Finding bad connections.Please wait ,this can take a few minutes in some cases.\n";
 @badconnections=();
 
 @connections=split(" ",$info);
@@ -31,10 +53,19 @@ foreach (@connections){
 	}
 if (@badconnections>0){
     foreach (@badconnections){
-        print"$_+\n";
+        $bad=$_;
+        print $bad;
+        if(isblocked($bad,@blockedips)){
+            print("    Blocked\n");
+        }
+        else{
+            print("\n");
+        }
     }
+
 }
 else{
     print "No bad connectiosn detected.\n";
 }
+
 
