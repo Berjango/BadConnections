@@ -40,13 +40,14 @@ if(@blockedips<1){
 	print"ERROR! ufw is not installed\n.You can exit the program (y=default) and install ufw with the following command  : \"sudo apt install ufw -y\"    or continue with limited functionality (n).\n";
 	$choice = <STDIN>;
 	chomp $choice;
-	if($choice=~/y/ or $choice==""){
+	if($choice=~/y/){
 	exit(1);
 	}
 	print("Continuing.\n");
 }
 else{
 	print"ufw is installed\n";
+	`sudo ufw enable`;
 }
 print "Finding bad connections.Please wait ,this can take a few minutes in some cases.\n";
 $info=`ss -rt`;
