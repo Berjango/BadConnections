@@ -14,26 +14,43 @@
 sub isblocked
 {
 my $ip=shift(@_);
+#print "ip=$ip\n";
 ($ip,$port)=split(":",$ip);
-@ipparts=split(".".$ip);
+#print "ip=$ip\n";
+my @ipparts=split(/\./,$ip);
+#print "ipparts=@ipparts\n";
 foreach (@_){
-    ($bip,$bits)=split("/",$_);
-    @bipparts=split(".".$bip);
+    ($bip,$bits)=split(/\//,$_);
+    #print "bip=$bip";
+    if($bip=~/:/ or $bip==""){
+        $blocked=0;
+        #print "non ipv4 detected\n"
+    }
+    else{
+    @bipparts=split(/\./,$bip);
+#    print "bipparts=@bipparts\n";
     $blocked=1;
+    #print "Checking @bipparts with @ipparts\n";
     for(my $i = 0; $i <= 3-$bits/8; $i++){
-        if($ipparts[i]!=$bipparts[i]){
+        #print "Loop $i $ipparts[$i] $bipparts[$i]\n";
+
+        if($ipparts[$i]!=$bipparts[$i]){
             $blocked=0;
+            #print "$blocked=0\n";
+            last;
         }
 
     }
-    if($blocked=1){
+    if($blocked==1){
         return(1);
+    }
     }
     }
     return(0);
 }
 print "Finding bad connections.Please wait ,this can take a few minutes in some cases.\n";
 $info=`ss -rt`;
+#$info="ESTAB 69.160.152.31:http\nESTAB 211.12.20.34:https";
 open my $handle, '<', "ipstoblock";
 chomp(my @blockedips = <$handle>);
 close $handle;
@@ -55,11 +72,11 @@ if (@badconnections>0){
     foreach (@badconnections){
         $bad=$_;
         print $bad;
-        if(isblocked($bad,@blockedips)){
+        if(isblocked($bad,@blockedips)==1){
             print("    Blocked\n");
         }
         else{
-            print("\n");
+            print("     Danger,connection not blocked\n");
         }
     }
 
@@ -67,5 +84,5 @@ if (@badconnections>0){
 else{
     print "No bad connectiosn detected.\n";
 }
-
+0;
 
