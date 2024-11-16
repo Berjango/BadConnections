@@ -13,28 +13,11 @@
 #Date - 14-11-2024
 #dougalite@gmail.com
 
+use FindBin;
+use lib $FindBin::Bin;
+require "mysubroutines.pl";
 
-sub isblocked
-{
-my $ip=shift(@_);
-($ip,$port)=split(":",$ip);
-@ipparts=split(".".$ip);
-foreach (@_){
-    ($bip,$bits)=split("/",$_);
-    @bipparts=split(".".$bip);
-    $blocked=1;
-    for(my $i = 0; $i <= 3-$bits/8; $i++){
-        if($ipparts[i]!=$bipparts[i]){
-            $blocked=0;
-        }
 
-    }
-    if($blocked=1){
-        return(1);
-    }
-    }
-    return(0);
-}
 print "Checking for ufw\n";
 my @blockedips=split("\n",`sudo ufw status verbose`);
 if(@blockedips<1){

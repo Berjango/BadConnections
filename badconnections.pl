@@ -6,34 +6,15 @@
 #Program to show suspected hacker connections.This is not 100% accurate but is useful.This program will produce both false positives and false negatives but they will
 #hopefully be in the minority.I have used this technique to succesfully remove hackers from my computer but there is no guarantee that it will work for anyone else.
 
-#This program uses and requires the ufw firewall which can be installed with "sudo apt install ufw". The program will try and install it automatically
+#This program uses and requires the ufw firewall which can be installed with "sudo apt install ufw". 
 
 #Author - Peter Wolf
 #Date - 12-11-2024
 #dougalite@gmail.com
+use FindBin;
+use lib $FindBin::Bin;
+require "mysubroutines.pl";
 
-
-sub isblocked
-{
-my $ip=shift(@_);
-($ip,$port)=split(":",$ip);
-@ipparts=split(".".$ip);
-foreach (@_){
-    ($bip,$bits)=split("/",$_);
-    @bipparts=split(".".$bip);
-    $blocked=1;
-    for(my $i = 0; $i <= 3-$bits/8; $i++){
-        if($ipparts[i]!=$bipparts[i]){
-            $blocked=0;
-        }
-
-    }
-    if($blocked=1){
-        return(1);
-    }
-    }
-    return(0);
-}
 print "Checking for ufw\n";
 my @blockedips=split("\n",`sudo ufw status verbose`);
 if(@blockedips<1){
@@ -132,7 +113,7 @@ if (@badconnections>0){
 
 }
 else{
-    print "No bad connectiosn detected.\n";
+    print "No bad connections detected.\n";
 }
 
 
