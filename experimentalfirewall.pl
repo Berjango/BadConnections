@@ -20,7 +20,7 @@ require "mysubroutines.pl";
 
 print "Checking for ufw\n";
 my @blockedips=split("\n",`sudo ufw status verbose`);
-if(@blockedips<1){
+if(!@blockedips){
 	print"ERROR! ufw is not installed\n.Install ufw with the following command  : \"sudo apt install ufw -y\"   and run the program again.\n";
 	exit(1);
 }
@@ -28,7 +28,6 @@ else{
 	print"ufw is installed\n";
 	`sudo ufw enable`;
 }
-open (fh, ">", "efw.log"); 
 print "Experimental firewall is running! logfile = efw.log in the same directory as the program.\n";
 while(1){
 $info=`ss -rt`;
@@ -37,13 +36,14 @@ my @blockedTO=();
 my @blockedFROM=();
 
 foreach (@blockedips){
-	($TO,$FROM)=split("DENY IN",$_);
+	($TO,$FROM)=split("DENY IN");
+    
 	$TO =~ s/^\s*(.*?)\s*$/$1/;
 	$FROM =~ s/^\s*(.*?)\s*$/$1/;
-	if($TO=~/\d+\.\d+\.\d+\.\d+/){
+	if(containsipv4($TO)){
 		push(@blockedTO,$TO);
 	}
-	if($FROM=~/\d+\.\d+\.\d+\.\d+/){
+	if(containsipv4($FROM)){
 		push(@blockedFROM,$FROM);
 	}
 }
@@ -61,36 +61,22 @@ foreach (@connections){
 @badTO=();
 @badFROM=();
 $unblocked=0;
-if (@badconnections>0){
+if (@badconnections){
     foreach (@badconnections){
         $bad=$_;
-        #print $bad;
-	($badip,$port)=split(":",$bad);
-        if(isblocked($bad,@blockedTO)){
+	($badip,$port)=split(":");
+        if(!isblocked($bad,@blockedTO)){
+		    $unblocked+=1;
+		    push(@badTO,$badip);
         }
-        else{
-		$unblocked+=1;
-		push(@badTO,$badip);
-        }
-        if(isblocked($bad,@blockedFROM)){
-        }
-        else{
- 		push(@badFROM,$badip);
-		$unblocked+=1;
+        if(!isblocked($bad,@blockedFROM)){
+ 		    push(@badFROM,$badip);
+		    $unblocked+=1;
         }
     }
-	if($unblocked>0){
-		foreach(@badTO){
-			`sudo ufw deny to $_`;
-            print"Blocked to $_";
-		print fh $_;
-		}
-
-		foreach(@badFROM){
-			`sudo ufw deny from $_`;
-            print"Blocked from $_";
-		print fh $_;
-		}
+	if($unblocked){
+        blockips(@badTO);
+        blockips(@badFROM);
 
 	}
 

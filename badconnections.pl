@@ -44,16 +44,13 @@ my @blockedFROM=();
 
 foreach (@blockedips){
 	#print "$_\n";
-	($TO,$FROM)=split("DENY IN",$_);
+	($TO,$FROM)=split("DENY IN");
 	$TO =~ s/^\s*(.*?)\s*$/$1/;
 	$FROM =~ s/^\s*(.*?)\s*$/$1/;
-	#print("$TO $FROM\n");
-	if($TO=~/\d+\.\d+\.\d+\.\d+/){
-		#print ("TO=$TO\n");
+	if(containsipv4($TO)){
 		push(@blockedTO,$TO);
 	}
-	if($FROM=~/\d+\.\d+\.\d+\.\d+/){
-		#print ("FROM=$FROM\n");
+	if(containsipv4($FROM)){
 		push(@blockedFROM,$FROM);
 	}
 }

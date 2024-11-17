@@ -6,6 +6,9 @@
 #dougalite@gmail.com
 
 
+
+open (fh, ">", "efw.log"); 
+
 sub isblocked
 {
 my $ip=shift(@_);
@@ -21,10 +24,27 @@ foreach (@_){
         }
 
     }
-    if($blocked==1){
+    if($blocked){
         return(1);
     }
     }
     return(0);
 }
+sub blockips
+{
+		foreach(@_){
+			`sudo ufw deny to $_`;
+            print"Blocked to $_ ";
+		print fh "$_\n";
+		}
+
+
+}
+
+sub containsipv4
+{
+
+	return($_=~/\d+\.\d+\.\d+\.\d+/);
+}
+close(fh);
 1;
