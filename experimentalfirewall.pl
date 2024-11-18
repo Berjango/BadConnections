@@ -29,6 +29,8 @@ else{
 	`sudo ufw enable`;
 }
 print "Experimental firewall is running! logfile = efw.log in the same directory as the program.\n";
+$total_blocked=0;
+$last_blocked="";
 while(1){
 $info=`ss -rt`;
 
@@ -52,10 +54,8 @@ foreach (@blockedips){
 
 @connections=split(" ",$info);
 foreach (@connections){
-	$con=$_;
-#	print "$con\n";
-	if ($con=~/(\d+\.\d+\.\d+\.\d+\:)/){
-		push(@badconnections,$con);
+	if ($_=~/(\d+\.\d+\.\d+\.\d+\:)/){
+		push(@badconnections,$_);
 		}
 	}
 @badTO=();
@@ -75,8 +75,15 @@ if (@badconnections){
         }
     }
 	if($unblocked){
-        blockips(@badTO);
-        blockips(@badFROM);
+        blockipsto(@badTO);
+        blockipsfrom(@badFROM);
+        $just_blocked=pop(@badTO);
+        if ($last_blocked!=$_){
+            $total_blocked+=$unblocked;
+            print "Total blocked ips = $total_blocked\n";
+            $last_blocked=$just_blocked;
+        }
+
 
 	}
 
