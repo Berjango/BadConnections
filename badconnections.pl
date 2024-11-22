@@ -17,11 +17,11 @@ require "mysubroutines.pl";
 
 print "Checking for ufw\n";
 my @blockedips=split("\n",`sudo ufw status verbose`);
-if(@blockedips<1){
+if(!@blockedips){
 	print"ERROR! ufw is not installed\n.You can exit the program (y=default) and install ufw with the following command  : \"sudo apt install ufw -y\"    or continue with limited functionality (n).\n";
 	$choice = <STDIN>;
-	chomp $choice;
-	if($choice=~/y/){
+	chomp;
+	if($_=~/y/){
 	exit(1);
 	}
 	print("Continuing.\n");
@@ -31,7 +31,6 @@ else{
 	`sudo ufw enable`;
 }
 print "Finding bad connections.Please wait ,this can take a few minutes in some cases.\n";
-$info=`ss -rt`;
 #open my $handle, '<', "ipstoblock";
 #chomp(my @blockedips = <$handle>);
 #close $handle;
@@ -58,19 +57,18 @@ foreach (@blockedips){
 #print @blockedFROM;
 
 @badconnections=();
+$info=`ss -rt`;
 
 @connections=split(" ",$info);
 foreach (@connections){
-	$con=$_;
-#	print "$con\n";
-	if ($con=~/(\d+\.\d+\.\d+\.\d+\:)/){
-		push(@badconnections,$con);
+	if ($_=~/(\d+\.\d+\.\d+\.\d+)\:/){
+		push(@badconnections,$1);
 		}
 	}
 @badTO=();
 @badFROM=();
 $unblocked=0;
-if (@badconnections>0){
+if(@badconnections){
     foreach (@badconnections){
         $bad=$_;
         print $bad;
@@ -92,7 +90,7 @@ if (@badconnections>0){
             print("     DANGER!!!!!!!!!!! NOT blocked from\n");
         }
     }
-	if($unblocked>0){
+	if($unblocked){
 	print("Do you want to block all the bad connections? (y/n)\n");
 	$choice = <STDIN>;
 	chomp $choice;

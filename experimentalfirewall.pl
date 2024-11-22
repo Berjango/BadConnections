@@ -13,9 +13,28 @@
 #Date - 14-11-2024
 #dougalite@gmail.com
 
+
 use FindBin;
 use lib $FindBin::Bin;
 require "mysubroutines.pl";
+
+
+@newlyblocked=();
+sub sortblocked   #populate second passed array with unique ips with source from the first passed array
+{
+($ref1,$ref2)=@_;
+@newlyblocked=@$ref2;
+foreach(@$ref1){
+	if ( !inarray($_,@newlyblocked ) ){
+		push(@newlyblocked,$_);
+	}
+}
+return(@newlyblocked);
+}
+
+
+
+
 
 
 print "Checking for ufw\n";
@@ -54,8 +73,10 @@ foreach (@blockedips){
 
 @connections=split(" ",$info);
 foreach (@connections){
-	if ($_=~/(\d+\.\d+\.\d+\.\d+\:)/){
-		push(@badconnections,$_);
+	if ($_=~/(\d+\.\d+\.\d+\.\d+)\:/){
+	    if(!($_=~/.*192\.168\..*/)){
+    		push(@badconnections,$1);
+    		}
 		}
 	}
 @badTO=();
@@ -63,26 +84,24 @@ foreach (@connections){
 $unblocked=0;
 if (@badconnections){
     foreach (@badconnections){
-        $bad=$_;
-	($badip,$port)=split(":");
-        if(!isblocked($bad,@blockedTO)){
+#        $bad=$_;
+#	($badip,$port)=split(":");
+        if(!isblocked($_,@blockedTO)){
 		    $unblocked+=1;
-		    push(@badTO,$badip);
+		    push(@badTO,$_);
         }
-        if(!isblocked($bad,@blockedFROM)){
- 		    push(@badFROM,$badip);
+        if(!isblocked($_,@blockedFROM)){
+ 		    push(@badFROM,$_);
 		    $unblocked+=1;
         }
     }
 	if($unblocked){
         blockipsto(@badTO);
         blockipsfrom(@badFROM);
-        $just_blocked=pop(@badTO);
-        if ($last_blocked!=$_){
-            $total_blocked+=$unblocked;
-            print "Total blocked ips = $total_blocked\n";
-            $last_blocked=$just_blocked;
-        }
+		@newlyblocked=sortblocked(\@badTO,\@newlyblocked);
+		@newlyblocked=sortblocked(\@badFROM,\@newlyblocked);
+		$totalblockedips=$#newlyblocked+1;
+        print "Total ips blocked this session = $totalblockedips\n";
 
 
 	}
