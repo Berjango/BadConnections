@@ -49,25 +49,32 @@ else{
 }
 print "Experimental firewall is running! logfile = efw.log in the same directory as the program.\n";
 $total_blocked=0;
-$last_blocked="";
 while(1){
 $info=`ss -rt`;
-
+if(length($info)<30){
+$info=`netstat -t`;
+}
 my @blockedTO=();
 my @blockedFROM=();
 
 foreach (@blockedips){
 	($TO,$FROM)=split("DENY IN");
     
-	$TO =~ s/^\s*(.*?)\s*$/$1/;
-	$FROM =~ s/^\s*(.*?)\s*$/$1/;
-	if(containsipv4($TO)){
+	$TO =~ s/^\s*(.*?)\s*$/$1/; #removes spaces
+	$FROM =~ s/^\s*(.*?)\s*$/$1/; #removes spaces
+	if($TO=~/\d+\.\d+\.\d+\.\d+/){ #if contains ipv4
 		push(@blockedTO,$TO);
 	}
-	if(containsipv4($FROM)){
+	if($FROM=~/\d+\.\d+\.\d+\.\d+/){#if contains  ipv4
 		push(@blockedFROM,$FROM);
 	}
 }
+
+
+
+
+
+
 
 @badconnections=();
 
@@ -95,13 +102,18 @@ if (@badconnections){
 		    $unblocked+=1;
         }
     }
+
+
+
+#print "blocked to = @blockedTO\n";
+#print "blocked from = @blockedFROM\n";
 	if($unblocked){
         blockipsto(@badTO);
         blockipsfrom(@badFROM);
 		@newlyblocked=sortblocked(\@badTO,\@newlyblocked);
 		@newlyblocked=sortblocked(\@badFROM,\@newlyblocked);
 		$totalblockedips=$#newlyblocked+1;
-        print "Total ips blocked this session = $totalblockedips\n";
+        print "Total unique ips blocked this session = $totalblockedips\n";
 
 
 	}
